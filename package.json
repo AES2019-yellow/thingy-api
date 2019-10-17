@@ -1,0 +1,7 @@
+{
+    "name": "thingy-api-yellow",
+    "version": "0.1.0",
+    "devDependencies": {
+      "mqtt":"^3.0.0"
+    }
+  }
