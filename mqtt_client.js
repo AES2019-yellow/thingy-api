@@ -1,3 +1,12 @@
+/*
+ * File: /mqtt_client.js
+ * Project: thingy-api-yellow
+ * File Created: Sun, 20th October 2019 4:35:43 pm
+ * Author: Yi Zhang (yi.zhang@unifr.ch)
+ * -----
+ * Copyright 2019 - 2019 AES-Unifr, AES2019-Yellow
+ */
+
 const mqtt = require("async-mqtt") // changed to async lib, can be then integrated in koa
 const host = "mqtt://mqtt.thing.zone";
 const options = {
