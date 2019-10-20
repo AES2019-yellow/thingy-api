@@ -42,7 +42,7 @@ SubModel.prototype.dispatcher = function (topic, message, packet) {
             'Thingy Humidity Characteristic': 'humidity',
             'Thingy Light Intensity Characteristic': 'lightIntensity',
             
-            // Services below belong to the 
+            // Services below doesn't belong to the environment service.
             // 'Thingy LED Characteristic':'led',
             // 'Thingy Button Characteristic':'button',
 
