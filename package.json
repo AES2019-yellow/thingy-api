@@ -4,5 +4,11 @@
   "devDependencies": {
     "async-mqtt": "^2.4.2",
     "mqtt": "^3.0.0"
+  },
+  "dependencies": {
+    "ioredis": "^4.14.1",
+    "koa": "^2.10.0",
+    "koa-bodyparser": "^4.2.1",
+    "koa-router": "^7.4.0"
   }
 }
