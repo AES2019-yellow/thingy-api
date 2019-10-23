@@ -129,8 +129,8 @@ var getTime = () =>{
     return timestap = date.getTime();
 }
 
-var getExipration = (minutes) => {
-    return  minutes*60;
+var getExipration = (seconds) => {
+    return  minutes = seconds/5*60;
 }
 
 var exports = module.exports = {};
