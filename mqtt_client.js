@@ -64,7 +64,7 @@ SubModel.prototype.temperature = async (thingy_id,topic_type,message, packet) =>
     let temperature_arr = message.toString().split(',');
     let temperature_val = parseFloat(temperature_arr[0]+"."+temperature_arr[1]);
     let key = thingy_id+':'+topic_type;
-    let exp = getExipration(MAX_EXPIRATION);
+    let exp = getExpiration(MAX_EXPIRATION);
     res = await redis.xadd(key,'MAXLEN','~',exp,'*',topic_type,temperature_val,'timestamp',timestamp);
     console.log(res);
     return res; // key entry returns if successful
@@ -76,7 +76,7 @@ SubModel.prototype.pressure = async function (thingy_id,topic_type,message,packe
     let pressure_arr = message.toString().split(',');
     let pressure_val = parseFloat(pressure_arr[0]+"."+pressure_arr[1]);
     let key = thingy_id+':'+topic_type;
-    let exp = getExipration(MAX_EXPIRATION);
+    let exp = getExpiration(MAX_EXPIRATION);
     res = await redis.xadd(key,'MAXLEN','~',exp,'*',topic_type,pressure_val,'timestamp',timestamp);
     console.log(res);
     return res; // key entry returns if successful
@@ -90,7 +90,7 @@ SubModel.prototype.airQuality = async function (thingy_id,topic_type,message,pac
     let co2_val = parseInt(airQ_arr[0]);
     let voc_val = parseInt(airQ_arr[1]);
     let key = thingy_id+':'+topic_type;
-    let exp = getExipration(MAX_EXPIRATION);
+    let exp = getExpiration(MAX_EXPIRATION);
     res = await redis.xadd(key,'MAXLEN','~',exp,'*',topic_types[0],co2_val,topic_types[1],voc_val,'timestamp',timestamp);
     console.log(res);
     return res; // key entry returns if successful 
@@ -101,7 +101,7 @@ SubModel.prototype.humidity = async function(thingy_id,topic_type,message,packet
     let timestamp = getTime();
     let humidity_val = parseInt(message.toString());
     let key = thingy_id+':'+topic_type;
-    let exp = getExipration(MAX_EXPIRATION);
+    let exp = getExpiration(MAX_EXPIRATION);
     res = await redis.xadd(key,'MAXLEN','~',exp,'*',topic_type,humidity_val,'timestamp',timestamp);
     console.log(res);
     return res; // key entry returns if successful
@@ -113,7 +113,7 @@ SubModel.prototype.lightIntensity = async function(thingy_id,topic_type,message,
     let light_vals = message.toString().split(',');
     let light_types = ['R','G','B','A']
     let key = thingy_id+':'+topic_type;
-    let exp = getExipration(MAX_EXPIRATION);
+    let exp = getExpiration(MAX_EXPIRATION);
     res = await redis.xadd(key,'MAXLEN','~',exp, '*', 
     light_types[0],light_vals[0],
     light_types[1],light_vals[1],
@@ -129,8 +129,8 @@ var getTime = () =>{
     return timestap = date.getTime();
 }
 
-var getExipration = (minutes) => {
-    return  minutes*60;
+var getExpiration = (seconds) => {
+    return  minutes = seconds/5*60;
 }
 
 var exports = module.exports = {};
