@@ -152,7 +152,7 @@ const onMessage = () => {
         exports.client.on('message',(topic,message,packet)=>{
             
             // @Todo serialization 
-            console.log("[Topic]: '"+ topic +"' | [Message]: '"+ message + "'");
+            // console.log("[Topic]: '"+ topic +"' | [Message]: '"+ message + "'");
             let res = sub.dispatcher(topic,message,packet);
         });
     }

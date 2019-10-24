@@ -7,7 +7,7 @@
  * Copyright 2019 - 2019 AES-Unifr, AES2019-Yellow
  */
 
-const router = require('koa-router')();
+const router = require('./router.js')
 const mqtt = require('./mqtt_client');
 const Koa = require('koa');
 const Redis = require('ioredis');
@@ -22,3 +22,10 @@ var redis_config = {
 };
 
 mqtt.client.on("connect",mqtt.doSub);
+
+app
+  .use(bodyParser())
+  .use(router.routes())
+  .use(router.allowedMethods());
+
+app.listen(3000);
