@@ -23,12 +23,12 @@ router
   /* resource end-points:
    * get last n resources
    */ 
-  .get('/temperature/', getTemperatures)
+  .get('/temperature/', getTemperature)
   .get('/airquality/',getAirQuality)
   .get('/humidity/',getHumidity)
-  .get('/pressure/',getPressures)
+  .get('/pressure/',getPressure)
 
-async function getTemperatures (ctx) {
+async function getTemperature (ctx) {
     let last = ctx.query['last'];
     last = getAmount(last);
     let temperatureModel = new model(DEVICE_ID,KEYS.temperature);
@@ -52,7 +52,7 @@ async function getHumidity (ctx) {
     return ctx.body = obj; 
 }
 
-async function getPressures (ctx) {
+async function getPressure (ctx) {
     let last = ctx.query['last'];
     last = getAmount(last);
     let pressureModel = new model(DEVICE_ID,KEYS.pressure);
