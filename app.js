@@ -21,7 +21,8 @@ var redis_config = {
     db:3
 };
 
-// mqtt.client.on("connect",mqtt.doSub);
+mqtt.client.on("connect",mqtt.doSub);
+
 app
   .use(bodyParser())
   .use(router.routes())

@@ -30,26 +30,36 @@ const BaseModel = function (device_Id=null,category=null){
 }
 
  BaseModel.prototype.streamParser = function (stream){
-    let key = '/* need to get this in model */';
-    let res = {};
-    res[key] = stream[0];
-    let keys = stream[1].filter((e, i) => i % 2 == 0);
-    let values = stream[1].filter((e, i) => i % 2 == 1);
-    let content = {};
-    keys.forEach((element, index) => {
-        content[element] = values[index];
+    return stream.map((element,index)=>{
+        /* key should be invisible to users */
+        // let key = element[0]; 
+        let value = element[1];
+        let value_keys = value.filter((e,i)=>i%2==0);
+        let value_values = value.filter((e,i)=>i%2==1);
+        let content = {};
+        value_keys.forEach((element,index)=>{
+            if (element == 'timestamp'){
+                let timestamp = value_values[index];
+                value_values[index] = timeToISO(timestamp);
+            }
+            content[element]=value_values[index];
+        });
+        return content
     });
-    Object.assign(res, content);
-    return res;
 }
 
 BaseModel.prototype.findN = async function(n){
     let res = await redis.xrevrange(this.getKey(),'+','-','COUNT',n.toString());
-    // res = this.streamParser(res);
+    res = this.streamParser(res);
     console.log(res);
     return res;
 }
 
+function timeToISO(timestamp){
+    let newDate = new Date();
+    newDate.setTime(timestamp);
+    return newDate.toISOString();
+}
 
 
 exports['default'] = BaseModel;

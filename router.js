@@ -24,9 +24,9 @@ router
    * get last n resources
    */ 
   .get('/temperature/', getTemperatures)
-  //.get('/airquality/',getAirQuality)
-  //.get('/humidity',getHumidity)
-  //.get('pressure',getPressures)
+  .get('/airquality/',getAirQuality)
+  .get('/humidity/',getHumidity)
+  .get('/pressure/',getPressures)
 
 async function getTemperatures (ctx) {
     let last = ctx.query['last'];
@@ -34,6 +34,30 @@ async function getTemperatures (ctx) {
     let temperatureModel = new model(DEVICE_ID,KEYS.temperature);
     let obj = await temperatureModel.findN(last);
     return ctx.body = obj;
+}
+
+async function getAirQuality (ctx) {
+    let last = ctx.query['last'];
+    last = getAmount(last);
+    let airQualityModel = new model(DEVICE_ID,KEYS.airQuality);
+    let obj = await airQualityModel.findN(last);
+    return ctx.body = obj; 
+}
+
+async function getHumidity (ctx) {
+    let last = ctx.query['last'];
+    last = getAmount(last);
+    let humidityModel = new model(DEVICE_ID,KEYS.humidity);
+    let obj = await humidityModel.findN(last);
+    return ctx.body = obj; 
+}
+
+async function getPressures (ctx) {
+    let last = ctx.query['last'];
+    last = getAmount(last);
+    let pressureModel = new model(DEVICE_ID,KEYS.pressure);
+    let obj = await pressureModel.findN(last);
+    return ctx.body = obj; 
 }
 
 function getAmount (amt) {
