@@ -15,7 +15,6 @@ const bodyParser = require('koa-bodyparser');
 
 const app = new Koa();
 
-
 mqtt.client.on("connect",mqtt.doSub);
 
 app

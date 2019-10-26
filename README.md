@@ -38,6 +38,10 @@ A RESTful Thingy-API for project of group AES2019-yellow
 > If no query or if last > 999, the APIs above return only 10 records as default.
 > `n` refers to the acquired number (rows).
 
+### Integrate Swagger UI for the implemented 4 APIs (Done)
+
+Loading the file __thingy-api-yellow.yml__ in the [swagger editor](https://editor.swagger.io/)
+
 ## Sprint 2 (in discussion)
 
 ### Create User Profile
@@ -70,3 +74,7 @@ Some methods: (might be)
   - renewToken
   - dismissToken
   - deleteUser (only for admin) ?
+
+### Documentation on Swagger
+
+Loading the file __thingy-api-yellow.yaml__ in the [swagger editor](https://editor.swagger.io/)
