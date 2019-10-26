@@ -10,6 +10,7 @@
 const router = require('./router.js')
 const mqtt = require('./mqtt_client');
 const Koa = require('koa');
+const cors = require('@koa/cors');
 const bodyParser = require('koa-bodyparser');
 
 const app = new Koa();
@@ -19,6 +20,7 @@ mqtt.client.on("connect",mqtt.doSub);
 
 app
   .use(bodyParser())
+  .use(cors())
   .use(router.routes())
   .use(router.allowedMethods());
 

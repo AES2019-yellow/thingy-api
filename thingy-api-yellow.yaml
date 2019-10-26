@@ -1,0 +1,156 @@
+# ----- 
+# File: /app.js
+# Project: thingy-api-yellow
+# File Created: Sun, 26th October 2019 11:15:50 am
+# Author: Andres Dorado
+# -----
+# Copyright 2019 - 2019 AES-BeNeFri, AES2019-Yellow
+
+openapi: 3.0.0
+info:
+  title: Thingy-API-yellow
+  description: This is a sample server for Automatic Suffocation Detection System
+  version: '1.0'
+  license:
+    name: Github link
+    url: https://github.com/AES2019-yellow/thingy-api-yellow/tree/dev
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  '/temperature':
+    get:
+      summary: Returns last n registers of temperature
+      parameters:
+        - name: last
+          in: query
+          description: Last n registers storaged in database. 0 < n < 1000
+          example: 10          
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 999
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Temperature'
+        '400':
+          description: Client Exception
+  '/pressure':
+    get:
+      summary: Returns last n registers of pressure
+      parameters:
+        - name: last
+          in: query
+          description: Last n registers storaged in database. 0 < n < 1000
+          example: 10
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 999
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pressure'
+        '400':
+          description: Client Exception
+  '/airquality':
+    get:
+      summary: Returns last n registers of CO2 (Carbon Dioxide) and TVOC (Total Volatile Organic Compounds)
+      parameters:
+        - name: last
+          in: query
+          description: Last n registers storaged in database. 0 < n < 1000
+          example: 10
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 999
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AirQuality'
+        '400':
+          description: Client Exception
+  '/humidity':
+    get:
+      summary: Returns last n registers of humidiy
+      parameters:
+        - name: last
+          in: query
+          description: Last n registers storaged in database. 0 < n < 1000
+          example: 10
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 999
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Humidity'
+        '400':
+          description: Client Exception
+components:
+  schemas:
+    Temperature:
+      type: object
+      required:
+        - temperature
+      properties:
+        temperature:
+          type: string
+        timestamp:
+          type: string
+    Pressure:
+      type: object
+      required:
+        - pressure
+      properties:
+        pressure:
+          type: string
+        timestamp:
+          type: string
+    AirQuality:
+      type: object
+      required:
+        - CO2
+        - TVOC
+      properties:
+        CO2:
+          type: string
+        TVOC:
+          type: string
+        timestamp:
+          type: string
+    Humidity:
+      type: object
+      required:
+        - humidity
+      properties:
+        humidity:
+          type: string
+        timestamp:
+          type: string

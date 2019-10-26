@@ -6,6 +6,7 @@
     "mqtt": "^3.0.0"
   },
   "dependencies": {
+    "@koa/cors": "^2.2.3",
     "ioredis": "^4.14.1",
     "koa": "^2.10.0",
     "koa-bodyparser": "^4.2.1",
