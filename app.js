@@ -12,6 +12,8 @@ const mqtt = require('./mqtt_client');
 const Koa = require('koa');
 const cors = require('@koa/cors');
 const bodyParser = require('koa-bodyparser');
+const koaSwagger = require('koa2-swagger-ui');
+const serve = require('koa-static');
 
 const app = new Koa();
 
@@ -21,6 +23,15 @@ app
   .use(bodyParser())
   .use(cors())
   .use(router.routes())
-  .use(router.allowedMethods());
+  .use(router.allowedMethods())
+  .use(serve('./static'))
+  .use(
+    koaSwagger({
+      routePrefix: '/swagger',
+      swaggerOptions: {
+        url: 'http://localhost:3000/thingy-api-yellow.yml'
+      }
+    })
+  );
 
 app.listen(3000);
