@@ -29,14 +29,23 @@ const redis = new Redis(redis_config);
 // SQLite implementation
 const sqlite3 = require("sqlite3").verbose();
 
+const TABLE_NAMES = {
+  tp: "temperature",
+  aq: "airquality",
+  pr: "pressure",
+  hm: "humidity"
+};
+
 // Counters to control the sqlite storage
 let count_temperature = 0, //meassure each 2s : 300 for 10 min
-  count_pressure = 0,
+  count_pressure = 0, //meassure each 2s : 300 for 10 min
   count_airQuality = 0, //meassure each 10s : 60 for 10 min
-  count_humidity = 0,
-  count_lightIntensity = 0;
+  count_humidity = 0; //meassure each 2s : 300 for 10 min
 
-const  MAX_COUNTER_TEMPERATURE = (1 * 60)/2;
+const MAX_COUNTER_TEMPERATURE = (10 * 60) / 2;
+const MAX_COUNTER_PRESSURE = (10 * 60) / 2;
+const MAX_COUNTER_AIRQUALITY = (10 * 60) / 10;
+const MAX_COUNTER_HUMIDITY = (10 * 60) / 2;
 
 const SubModel = function() {};
 
@@ -84,26 +93,22 @@ SubModel.prototype.temperature = async (
   );
   let key = thingy_id + ":" + topic_type;
   let exp = getExpiration(MAX_EXPIRATION);
-  res = await redis.xadd(
-    key,
-    "MAXLEN",
-    "~",
-    exp,
-    "*",
-    topic_type,
-    temperature_val,
-    "timestamp",
-    timestamp
-  );
-  if(count_temperature == 0){
-    await savePermanentData("temperature");
-    
+  res = await redis.xadd(key, "MAXLEN", "~", exp, "*", topic_type, temperature_val, "timestamp", timestamp);
+  params = {
+    type: "T",
+    temperature: temperature_val,
+    timestamp: timestamp,
+    lat: 0.0,
+    long: 0.0
+  };
+  if (count_temperature == 0) {
+    await savePermanentData(TABLE_NAMES["tp"], params);
   }
-  if(count_temperature == MAX_COUNTER_TEMPERATURE){
-    await savePermanentData("temperature");
-    count_temperature == 0
-  } 
-  count_temperature++; 
+  if (count_temperature == MAX_COUNTER_TEMPERATURE) {
+    await savePermanentData(TABLE_NAMES["tp"], params);
+    count_temperature = 0;
+  }
+  count_temperature++;
   console.log(res);
   return res; // key entry returns if successful
 };
@@ -120,17 +125,22 @@ SubModel.prototype.pressure = async function(
   let pressure_val = parseFloat(pressure_arr[0] + "." + pressure_arr[1]);
   let key = thingy_id + ":" + topic_type;
   let exp = getExpiration(MAX_EXPIRATION);
-  res = await redis.xadd(
-    key,
-    "MAXLEN",
-    "~",
-    exp,
-    "*",
-    topic_type,
-    pressure_val,
-    "timestamp",
-    timestamp
-  );
+  res = await redis.xadd(key, "MAXLEN", "~", exp, "*", topic_type, pressure_val, "timestamp", timestamp);
+  params = {
+    type: "P",
+    pressure: pressure_val,
+    timestamp: timestamp,
+    lat: 0.0,
+    long: 0.0
+  };
+  if (count_pressure == 0) {
+    await savePermanentData(TABLE_NAMES["pr"], params);
+  }
+  if (count_pressure == MAX_COUNTER_PRESSURE) {
+    await savePermanentData(TABLE_NAMES["pr"], params);
+    count_pressure = 0;
+  }
+  count_pressure++;
   console.log(res);
   return res; // key entry returns if successful
 };
@@ -149,19 +159,23 @@ SubModel.prototype.airQuality = async function(
   let voc_val = parseInt(airQ_arr[1]);
   let key = thingy_id + ":" + topic_type;
   let exp = getExpiration(MAX_EXPIRATION);
-  res = await redis.xadd(
-    key,
-    "MAXLEN",
-    "~",
-    exp,
-    "*",
-    topic_types[0],
-    co2_val,
-    topic_types[1],
-    voc_val,
-    "timestamp",
-    timestamp
-  );
+  res = await redis.xadd(key, "MAXLEN", "~", exp, "*", topic_types[0], co2_val, topic_types[1], voc_val, "timestamp", timestamp);
+  params = {
+    type: "A",
+    co2: co2_val,
+    tvoc: voc_val,
+    timestamp: timestamp,
+    lat: 0.0,
+    long: 0.0
+  };
+  if (count_airQuality == 0) {
+    await savePermanentData(TABLE_NAMES["aq"], params);
+  }
+  if (count_airQuality == MAX_COUNTER_AIRQUALITY) {
+    await savePermanentData(TABLE_NAMES["aq"], params);
+    count_airQuality = 0;
+  }
+  count_airQuality++;
   console.log(res);
   return res; // key entry returns if successful
 };
@@ -177,17 +191,22 @@ SubModel.prototype.humidity = async function(
   let humidity_val = parseInt(message.toString());
   let key = thingy_id + ":" + topic_type;
   let exp = getExpiration(MAX_EXPIRATION);
-  res = await redis.xadd(
-    key,
-    "MAXLEN",
-    "~",
-    exp,
-    "*",
-    topic_type,
-    humidity_val,
-    "timestamp",
-    timestamp
-  );
+  res = await redis.xadd(key, "MAXLEN", "~", exp, "*", topic_type, humidity_val, "timestamp", timestamp);
+  params = {
+    type: "H",
+    humidity: humidity_val,
+    timestamp: timestamp,
+    lat: 0.0,
+    long: 0.0
+  };
+  if (count_humidity == 0) {
+    await savePermanentData(TABLE_NAMES["hm"], params);
+  }
+  if (count_humidity == MAX_COUNTER_HUMIDITY) {
+    await savePermanentData(TABLE_NAMES["hm"], params);
+    count_humidity = 0;
+  }
+  count_humidity++;
   console.log(res);
   return res; // key entry returns if successful
 };
@@ -234,23 +253,66 @@ var getExpiration = seconds => {
   return (minutes = (seconds / 5) * 60);
 };
 
-var savePermanentData = async tableName => {
+var savePermanentData = async (tableName, params) => {
   let sqlite_db = new sqlite3.Database("./db/thingyApiDB.db", err => {
     if (err) {
       console.error(err.message);
     }
   });
 
-  let query = `SELECT * FROM ${tableName}`;
-
-  sqlite_db.all(query, [], (err, rows) => {
-    if (err) {
-      throw err;
+  if ("type" in params) {
+    let query, values;
+    switch (params["type"]) {
+      case "T":
+        query = `INSERT INTO ${tableName} (temperature, timestamp, lat, long) VALUES (?, ?, ?, ?)`;
+        values = [
+          params["temperature"],
+          params["timestamp"],
+          params["lat"],
+          params["long"]
+        ];
+        break;
+      case "P":
+        query = `INSERT INTO ${tableName} (pressure, timestamp, lat, long) VALUES (?, ?, ?, ?)`;
+        values = [
+          params["pressure"],
+          params["timestamp"],
+          params["lat"],
+          params["long"]
+        ];
+        break;
+      case "A":
+        query = `INSERT INTO ${tableName} (co2, tvoc, timestamp, lat, long) VALUES (?, ?, ?, ?, ?)`;
+        values = [
+          params["co2"],
+          params["tvoc"],
+          params["timestamp"],
+          params["lat"],
+          params["long"]
+        ];
+        break;
+      case "H":
+        query = `INSERT INTO ${tableName} (humidity, timestamp, lat, long) VALUES (?, ?, ?, ?)`;
+        values = [
+          params["humidity"],
+          params["timestamp"],
+          params["lat"],
+          params["long"]
+        ];
+        break;
+      
+      default:
+        break;
     }
-    rows.forEach(row => {
-      console.log(row);
+
+    sqlite_db.run(query, values, err => {
+      if (err) {
+        return console.log(err.message);
+      }
+      // get the last insert id
+      console.log(`A row has been inserted in ${tableName}`);
     });
-  });
+  }
 
   sqlite_db.close(err => {
     if (err) {
