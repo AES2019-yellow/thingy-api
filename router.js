@@ -27,6 +27,7 @@ router
   .get('/airquality/',getAirQuality)
   .get('/humidity/',getHumidity)
   .get('/pressure/',getPressure)
+  .get('/temperature/date', getTemperatureByDate)
 
 async function getTemperature (ctx) {
     let last = ctx.query['last'];
@@ -58,6 +59,14 @@ async function getPressure (ctx) {
     let pressureModel = new model(DEVICE_ID,KEYS.pressure);
     let obj = await pressureModel.findN(last);
     return ctx.body = obj; 
+}
+
+async function getTemperatureByDate (ctx) {
+    let start = ctx.query['start'];
+    let end = ctx.query['end'];
+    let temperatureModel = new model(DEVICE_ID,KEYS.temperature);
+    let obj = await temperatureModel.findByDates(KEYS.temperature, start, end);
+    return ctx.body = obj;
 }
 
 function getAmount (amt) {
