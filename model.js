@@ -17,6 +17,7 @@ var redis_config = {
 
 const redis = new Redis(redis_config);
 
+
 // SQLite implementation
 const sqlite3 = require("sqlite3").verbose();
 

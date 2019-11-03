@@ -18,6 +18,7 @@ const serve = require('koa-static');
 const app = new Koa();
 
 mqtt.client.on("connect",mqtt.doSub);
+mqtt.redisSub();
 
 app
   .use(bodyParser())

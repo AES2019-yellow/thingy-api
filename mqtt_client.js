@@ -25,6 +25,8 @@ var redis_config = {
 };
 
 const redis = new Redis(redis_config);
+const redisSub = new Redis(redis_config);
+const redisPub = new Redis(redis_config); 
 
 // SQLite implementation
 const sqlite3 = require("sqlite3").verbose();
@@ -101,6 +103,7 @@ SubModel.prototype.temperature = async (
     lat: 0.0,
     long: 0.0
   };
+  /*
   if (count_temperature == 0) {
     await savePermanentData(TABLE_NAMES["tp"], params);
   }
@@ -109,7 +112,9 @@ SubModel.prototype.temperature = async (
     count_temperature = 0;
   }
   count_temperature++;
-  console.log(res);
+  */
+  // console.log(res);
+  redisPub.publish("xadd",key+":"+res)
   return res; // key entry returns if successful
 };
 
@@ -133,6 +138,7 @@ SubModel.prototype.pressure = async function(
     lat: 0.0,
     long: 0.0
   };
+  /*
   if (count_pressure == 0) {
     await savePermanentData(TABLE_NAMES["pr"], params);
   }
@@ -141,7 +147,9 @@ SubModel.prototype.pressure = async function(
     count_pressure = 0;
   }
   count_pressure++;
-  console.log(res);
+  */
+  // console.log(res);
+  redisPub.publish("xadd",key+":"+res)
   return res; // key entry returns if successful
 };
 
@@ -168,6 +176,7 @@ SubModel.prototype.airQuality = async function(
     lat: 0.0,
     long: 0.0
   };
+  /*
   if (count_airQuality == 0) {
     await savePermanentData(TABLE_NAMES["aq"], params);
   }
@@ -176,7 +185,9 @@ SubModel.prototype.airQuality = async function(
     count_airQuality = 0;
   }
   count_airQuality++;
-  console.log(res);
+  */
+  // console.log(res);
+  redisPub.publish("xadd",key+":"+res)
   return res; // key entry returns if successful
 };
 
@@ -199,6 +210,7 @@ SubModel.prototype.humidity = async function(
     lat: 0.0,
     long: 0.0
   };
+  /*
   if (count_humidity == 0) {
     await savePermanentData(TABLE_NAMES["hm"], params);
   }
@@ -207,7 +219,9 @@ SubModel.prototype.humidity = async function(
     count_humidity = 0;
   }
   count_humidity++;
-  console.log(res);
+  // console.log(res);
+  */
+  redisPub.publish("xadd","/"+key+":"+res+"/")
   return res; // key entry returns if successful
 };
 
@@ -240,7 +254,7 @@ SubModel.prototype.lightIntensity = async function(
     "timestamp",
     timestamp
   );
-  console.log(res);
+  // console.log(res);
   return res;
 };
 
@@ -321,6 +335,16 @@ var savePermanentData = async (tableName, params) => {
   });
 };
 
+// counter for save data to sqlite
+
+var MsgCounter = {
+
+} 
+
+var msgCounter = function(msg){
+
+}
+
 var exports = (module.exports = {});
 
 exports.client = mqtt.connect(host, options);
@@ -342,3 +366,17 @@ const onMessage = () => {
     let res = sub.dispatcher(topic, message, packet);
   });
 };
+
+exports.redisSub = function(){
+  redisSub.subscribe("xadd", function(err,count){
+  // Now we are subscribed to both the 'xadd' channel.
+  // `count` represents the number of channels we are currently subscribed to.
+  console.log("xadd",count);
+  if(!err){
+    redisSub.on("message", function(channel, message){
+      console.log("Receive message %s from channel %s", message, channel);
+
+    });
+  }
+  });
+}
