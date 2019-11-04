@@ -22,12 +22,15 @@ const model = require('./model.js')
 router
   /* resource end-points:
    * get last n resources
+   * @ToDo: need to add device_id later
+   * e.g. '/{device_id}/temperature/'
+   * 
    */ 
   .get('/temperature/', getTemperature)
   .get('/airquality/',getAirQuality)
   .get('/humidity/',getHumidity)
   .get('/pressure/',getPressure)
-  .get('/temperature/date', getTemperatureByDate)
+  .get('/temperature/date/', getTemperatureByDate)
 
 async function getTemperature (ctx) {
     let last = ctx.query['last'];

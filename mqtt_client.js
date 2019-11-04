@@ -24,34 +24,31 @@ var redis_config = {
   db: 3
 };
 
+const redisModel = require('./model.js')
+
+
 const redis = new Redis(redis_config);
 const redisSub = new Redis(redis_config);
 const redisPub = new Redis(redis_config); 
 
 // SQLite implementation
-const sqlite3 = require("sqlite3").verbose();
+// const sqlite3 = require("sqlite3").verbose();
 
-const TABLE_NAMES = {
-  tp: "temperature",
-  aq: "airquality",
-  pr: "pressure",
-  hm: "humidity"
+const db = require('./sqlite_db');
+const getExpiration = (seconds,freq=2) => {
+  return (minutes = (seconds / freq) * 60);
 };
-
-// Counters to control the sqlite storage
-let count_temperature = 0, //meassure each 2s : 300 for 10 min
-  count_pressure = 0, //meassure each 2s : 300 for 10 min
-  count_airQuality = 0, //meassure each 10s : 60 for 10 min
-  count_humidity = 0; //meassure each 2s : 300 for 10 min
-
-const MAX_COUNTER_TEMPERATURE = (10 * 60) / 2;
-const MAX_COUNTER_PRESSURE = (10 * 60) / 2;
-const MAX_COUNTER_AIRQUALITY = (10 * 60) / 10;
-const MAX_COUNTER_HUMIDITY = (10 * 60) / 2;
+const MAX_EXPIRATION = 120; // minutes
+const PERSIST_PERIODS = {
+  temperature: getExpiration(30,2),
+  pressure: getExpiration(30,2),
+  humidity: getExpiration(30,2),
+  airQuality: getExpiration(30,10)
+}
+let counters = [];
 
 const SubModel = function() {};
 
-const MAX_EXPIRATION = 120; //in minutes
 
 var sub = new SubModel();
 
@@ -96,25 +93,9 @@ SubModel.prototype.temperature = async (
   let key = thingy_id + ":" + topic_type;
   let exp = getExpiration(MAX_EXPIRATION);
   res = await redis.xadd(key, "MAXLEN", "~", exp, "*", topic_type, temperature_val, "timestamp", timestamp);
-  params = {
-    type: "T",
-    temperature: temperature_val,
-    timestamp: timestamp,
-    lat: 0.0,
-    long: 0.0
-  };
-  /*
-  if (count_temperature == 0) {
-    await savePermanentData(TABLE_NAMES["tp"], params);
-  }
-  if (count_temperature == MAX_COUNTER_TEMPERATURE) {
-    await savePermanentData(TABLE_NAMES["tp"], params);
-    count_temperature = 0;
-  }
-  count_temperature++;
-  */
+
   // console.log(res);
-  redisPub.publish("xadd",key+":"+res)
+  redisPub.publish("xadd","/"+key+":"+res+"/")
   return res; // key entry returns if successful
 };
 
@@ -131,25 +112,9 @@ SubModel.prototype.pressure = async function(
   let key = thingy_id + ":" + topic_type;
   let exp = getExpiration(MAX_EXPIRATION);
   res = await redis.xadd(key, "MAXLEN", "~", exp, "*", topic_type, pressure_val, "timestamp", timestamp);
-  params = {
-    type: "P",
-    pressure: pressure_val,
-    timestamp: timestamp,
-    lat: 0.0,
-    long: 0.0
-  };
-  /*
-  if (count_pressure == 0) {
-    await savePermanentData(TABLE_NAMES["pr"], params);
-  }
-  if (count_pressure == MAX_COUNTER_PRESSURE) {
-    await savePermanentData(TABLE_NAMES["pr"], params);
-    count_pressure = 0;
-  }
-  count_pressure++;
-  */
+
   // console.log(res);
-  redisPub.publish("xadd",key+":"+res)
+  redisPub.publish("xadd","/"+key+":"+res+"/")
   return res; // key entry returns if successful
 };
 
@@ -166,28 +131,11 @@ SubModel.prototype.airQuality = async function(
   let co2_val = parseInt(airQ_arr[0]);
   let voc_val = parseInt(airQ_arr[1]);
   let key = thingy_id + ":" + topic_type;
-  let exp = getExpiration(MAX_EXPIRATION);
+  let exp = getExpiration(MAX_EXPIRATION,10);
   res = await redis.xadd(key, "MAXLEN", "~", exp, "*", topic_types[0], co2_val, topic_types[1], voc_val, "timestamp", timestamp);
-  params = {
-    type: "A",
-    co2: co2_val,
-    tvoc: voc_val,
-    timestamp: timestamp,
-    lat: 0.0,
-    long: 0.0
-  };
-  /*
-  if (count_airQuality == 0) {
-    await savePermanentData(TABLE_NAMES["aq"], params);
-  }
-  if (count_airQuality == MAX_COUNTER_AIRQUALITY) {
-    await savePermanentData(TABLE_NAMES["aq"], params);
-    count_airQuality = 0;
-  }
-  count_airQuality++;
-  */
+
   // console.log(res);
-  redisPub.publish("xadd",key+":"+res)
+  redisPub.publish("xadd","/"+key+":"+res+"/")
   return res; // key entry returns if successful
 };
 
@@ -203,24 +151,8 @@ SubModel.prototype.humidity = async function(
   let key = thingy_id + ":" + topic_type;
   let exp = getExpiration(MAX_EXPIRATION);
   res = await redis.xadd(key, "MAXLEN", "~", exp, "*", topic_type, humidity_val, "timestamp", timestamp);
-  params = {
-    type: "H",
-    humidity: humidity_val,
-    timestamp: timestamp,
-    lat: 0.0,
-    long: 0.0
-  };
-  /*
-  if (count_humidity == 0) {
-    await savePermanentData(TABLE_NAMES["hm"], params);
-  }
-  if (count_humidity == MAX_COUNTER_HUMIDITY) {
-    await savePermanentData(TABLE_NAMES["hm"], params);
-    count_humidity = 0;
-  }
-  count_humidity++;
-  // console.log(res);
-  */
+  
+ // console.log(res);
   redisPub.publish("xadd","/"+key+":"+res+"/")
   return res; // key entry returns if successful
 };
@@ -236,7 +168,7 @@ SubModel.prototype.lightIntensity = async function(
   let light_vals = message.toString().split(",");
   let light_types = ["R", "G", "B", "A"];
   let key = thingy_id + ":" + topic_type;
-  let exp = getExpiration(MAX_EXPIRATION);
+  let exp = getExpiration(MAX_EXPIRATION,10);
   res = await redis.xadd(
     key,
     "MAXLEN",
@@ -263,87 +195,9 @@ var getTime = () => {
   return (timestap = date.getTime());
 };
 
-var getExpiration = seconds => {
-  return (minutes = (seconds / 5) * 60);
-};
 
-var savePermanentData = async (tableName, params) => {
-  let sqlite_db = new sqlite3.Database("./db/thingyApiDB.db", err => {
-    if (err) {
-      console.error(err.message);
-    }
-  });
-
-  if ("type" in params) {
-    let query, values;
-    switch (params["type"]) {
-      case "T":
-        query = `INSERT INTO ${tableName} (temperature, timestamp, lat, long) VALUES (?, ?, ?, ?)`;
-        values = [
-          params["temperature"],
-          params["timestamp"],
-          params["lat"],
-          params["long"]
-        ];
-        break;
-      case "P":
-        query = `INSERT INTO ${tableName} (pressure, timestamp, lat, long) VALUES (?, ?, ?, ?)`;
-        values = [
-          params["pressure"],
-          params["timestamp"],
-          params["lat"],
-          params["long"]
-        ];
-        break;
-      case "A":
-        query = `INSERT INTO ${tableName} (co2, tvoc, timestamp, lat, long) VALUES (?, ?, ?, ?, ?)`;
-        values = [
-          params["co2"],
-          params["tvoc"],
-          params["timestamp"],
-          params["lat"],
-          params["long"]
-        ];
-        break;
-      case "H":
-        query = `INSERT INTO ${tableName} (humidity, timestamp, lat, long) VALUES (?, ?, ?, ?)`;
-        values = [
-          params["humidity"],
-          params["timestamp"],
-          params["lat"],
-          params["long"]
-        ];
-        break;
-      
-      default:
-        break;
-    }
-
-    sqlite_db.run(query, values, err => {
-      if (err) {
-        return console.log(err.message);
-      }
-      // get the last insert id
-      console.log(`A row has been inserted in ${tableName}`);
-    });
-  }
-
-  sqlite_db.close(err => {
-    if (err) {
-      console.error(err.message);
-    }
-  });
-};
 
 // counter for save data to sqlite
-
-var MsgCounter = {
-
-} 
-
-var msgCounter = function(msg){
-
-}
 
 var exports = (module.exports = {});
 
@@ -371,12 +225,142 @@ exports.redisSub = function(){
   redisSub.subscribe("xadd", function(err,count){
   // Now we are subscribed to both the 'xadd' channel.
   // `count` represents the number of channels we are currently subscribed to.
-  console.log("xadd",count);
+  // console.log("xadd",count);
   if(!err){
     redisSub.on("message", function(channel, message){
-      console.log("Receive message %s from channel %s", message, channel);
+      persistData(channel,message);
+      // console.log("Receive message %s from channel %s", message, channel);
+
 
     });
   }
   });
+}
+
+const parseRedisMsg = function (channel, message){
+  message = message.split('/')[1]
+  let message_arr = message.split(':')
+  // 0-5 is device, 6 is type, 7 is key returned from redis
+  let device_name = message_arr.slice(0,6).join(':');
+  let type = message_arr[6];
+  let key = message_arr[7];
+  return [device_name,type,key];
+}
+
+const getCounter = function (counters,device_name,type){
+  /*let aCounter = counters.filter((ele,ind)=>{
+    ele['device_name'] == device_name;
+    // console.log('ele:',ele)
+  })[0];*/
+  let aCounter = null;
+  for (const counter of counters) {
+    if (counter.device_name ==device_name) {
+      aCounter = counter;
+      break
+    }
+  }
+  if (aCounter == undefined || aCounter == null){
+    aCounter = new Object();
+    aCounter['device_name'] = device_name;
+    aCounter['data'] = new Object()
+    aCounter['data'][type] = 0;  // counter for resource
+    counters.push(aCounter)
+  } else if (aCounter['data'][type]==undefined || aCounter['data'][type]==null){
+    (aCounter['data'])[type] = 0;
+  }
+
+  return aCounter;
+}
+
+const meanFromRedis = async function(device_name,type,exp,end){
+    console.log("device_name: ",device_name)
+    console.log("type: ",type)
+
+    let typeModel = await new redisModel(device_name,type);
+    console.log("end",end)
+    let redis_res = await typeModel.findN(exp,end);
+    console.log("redis_res", redis_res)
+    let from = null;
+    let to = null;
+    if (type!="airQuality"){
+      let sum = 0
+      for (const index of redis_res.keys()) {
+        if (index==0){
+          to = redis_res[index].timestamp;
+        }
+        if (index==redis_res.length-1){
+          from = redis_res[index].timestamp; 
+        }
+        sum += parseFloat(redis_res[index][type]);
+      }
+      let mean = parseFloat((sum/redis_res.length).toFixed(2));
+      let res =  {
+        type:type,
+        from:from,
+        to:to,
+        means:[mean]
+      }
+        console.log("Non-Air Res:",res)
+        return res;
+      } 
+     else {
+      // for airQuality we have 2 values:
+      let sum_co2 = 0;
+      let sum_tvoc = 0;
+      for (const index of redis_res.keys()) {
+        if (index==0){
+          to = redis_res[index].timestamp;
+        }
+        if (index==redis_res.length-1){
+          from = redis_res[index].timestamp; 
+        }
+        sum_co2 += parseFloat(redis_res[index]['CO2']);
+        sum_tvoc += parseFloat(redis_res[index]['TVOC']); 
+      }
+      let mean_co2 = parseFloat((sum_co2/redis_res.length).toFixed(2));
+      let mean_tvoc = parseFloat((sum_tvoc/redis_res.length).toFixed(2));
+      let res = {
+        type:type,
+        from:from,
+        to:to,
+        means:[mean_co2, mean_tvoc]
+      }
+      console.log("Air Res:",res)
+      return res 
+   }
+  }
+
+
+const persistData = async function (channel,message){
+  
+  let redis_msg_arr = parseRedisMsg(channel,message);
+  let device_name = redis_msg_arr[0];
+  let type = redis_msg_arr[1];
+  let key = redis_msg_arr[2];
+
+  // get counter
+  let aCounter = getCounter(counters,device_name,type);
+  // get mean value of records from redis 
+  // and save into sequelize model / SQLite
+  let exp = PERSIST_PERIODS[type];
+  if (aCounter['data'][type]%exp == 0 && aCounter['data'][type]!=0){
+    if (aCounter['data'][type]>0){
+      aCounter['data'][type]=0
+    }
+    
+    let data  = await meanFromRedis(device_name,type,exp,key);
+    await saveDispatcherByType(device_name,data);
+  }  
+  // set counter
+  aCounter['data'][type]++;
+}
+
+const saveDispatcherByType = async (device_name,data)=>{
+  let types_map = {
+    temperature: db.saveTemperatureByDeviceName,
+    pressure: db.savePressureByDeviceName,
+    humidity: db.saveHumidityByDeviceName,
+    airQuality: db.saveAirQualityByDeviceName
+  }
+  return await types_map[data.type].apply(null,[device_name,data])
 }

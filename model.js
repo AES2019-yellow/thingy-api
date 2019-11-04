@@ -19,7 +19,7 @@ const redis = new Redis(redis_config);
 
 
 // SQLite implementation
-const sqlite3 = require("sqlite3").verbose();
+// const sqlite3 = require("sqlite3").verbose();
 
 const BaseModel = function(device_Id = null, category = null) {
   this.deviceId = device_Id;
@@ -52,10 +52,10 @@ BaseModel.prototype.streamParser = function(stream) {
   });
 };
 
-BaseModel.prototype.findN = async function(n) {
+BaseModel.prototype.findN = async function(n,end="+") {
   let res = await redis.xrevrange(
     this.getKey(),
-    "+",
+    end,
     "-",
     "COUNT",
     n.toString()
@@ -65,12 +65,7 @@ BaseModel.prototype.findN = async function(n) {
   return res;
 };
 
-function timeToISO(timestamp) {
-  let newDate = new Date();
-  newDate.setTime(timestamp);
-  return newDate.toISOString();
-}
-
+/*
 BaseModel.prototype.findByDates = async function(db_name, startDate, endDate) {
   let start = new Date(startDate).getTime();
   let end = new Date(endDate);
@@ -100,7 +95,16 @@ BaseModel.prototype.findByDates = async function(db_name, startDate, endDate) {
   });
 
   return res;
-};
+}
+*/
+
+function timeToISO(timestamp) {
+  let newDate = new Date();
+  newDate.setTime(timestamp);
+  return newDate.toISOString();
+}
+
+
 
 exports["default"] = BaseModel;
 module.exports = exports["default"];
