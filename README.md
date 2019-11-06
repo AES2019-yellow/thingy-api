@@ -12,6 +12,9 @@ A RESTful Thingy-API for project of group AES2019-yellow
       - [API Endpoints and Routers (done)](#api-endpoints-and-routers-done)
       - [Integrate Swagger UI for the implemented 4 APIs (Done)](#integrate-swagger-ui-for-the-implemented-4-apis-done)
       - [Web Client (scaffolding) with data representation (Done)](#web-client-scaffolding-with-data-representation-done)
+      - [Models for historical data with RDMBS (Done)](#models-for-historical-data-with-rdmbs-done)
+      - [Using ORM (Sequelize) to decouple the DB and Model (Done)](#using-orm-sequelize-to-decouple-the-db-and-model-done)
+      - [Using Redis Sub / Pub to verify the amount of appended fields. Hence, data can be compressed (in mean values) and transfered to a RDBMS (Done)](#using-redis-sub--pub-to-verify-the-amount-of-appended-fields-hence-data-can-be-compressed-in-mean-values-and-transfered-to-a-rdbms-done)
     - [Endpoint / Resources: (`GET` only)](#endpoint--resources-get-only)
   - [Sprint 2 (in discussion)](#sprint-2-in-discussion)
     - [Create User Profile](#create-user-profile)
@@ -35,6 +38,12 @@ A RESTful Thingy-API for project of group AES2019-yellow
 #### Integrate Swagger UI for the implemented 4 APIs (Done)
 
 #### Web Client (scaffolding) with data representation (Done)
+
+#### Models for historical data with RDMBS (Done)
+
+#### Using ORM (Sequelize) to decouple the DB and Model (Done)
+
+#### Using Redis Sub / Pub to verify the amount of appended fields. Hence, data can be compressed (in mean values) and transfered to a RDBMS (Done)
 
 ### Endpoint / Resources: (`GET` only)
 
@@ -80,4 +89,3 @@ Some methods: (might be)
   - renewToken
   - dismissToken
   - deleteUser (only for admin) ?
-
