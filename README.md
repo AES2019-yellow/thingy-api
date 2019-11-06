@@ -4,11 +4,15 @@ A RESTful Thingy-API for project of group AES2019-yellow
 
 - [thingy-api](#thingy-api)
   - [Sprint 1](#sprint-1)
-    - [Setting-up Thingy and Thingy-gateway (done)](#setting-up-thingy-and-thingy-gateway-done)
-    - [MQTT Client and subscribe with event listener (done)](#mqtt-client-and-subscribe-with-event-listener-done)
-    - [WS implemented with MVC (done)](#ws-implemented-with-mvc-done)
-    - [API Endpoints and Routers (in processing)](#api-endpoints-and-routers-in-processing)
-    - [Resources: (`GET` only)](#resources-get-only)
+    - [Checklist](#checklist)
+      - [Setting-up Thingy and Thingy-gateway (done)](#setting-up-thingy-and-thingy-gateway-done)
+      - [MQTT Client and subscribe with event listener (done)](#mqtt-client-and-subscribe-with-event-listener-done)
+      - [WS implemented with MVC (done)](#ws-implemented-with-mvc-done)
+      - [Model with redis (done)](#model-with-redis-done)
+      - [API Endpoints and Routers (done)](#api-endpoints-and-routers-done)
+      - [Integrate Swagger UI for the implemented 4 APIs (Done)](#integrate-swagger-ui-for-the-implemented-4-apis-done)
+      - [Web Client (scaffolding) with data representation (Done)](#web-client-scaffolding-with-data-representation-done)
+    - [Endpoint / Resources: (`GET` only)](#endpoint--resources-get-only)
   - [Sprint 2 (in discussion)](#sprint-2-in-discussion)
     - [Create User Profile](#create-user-profile)
     - [Create User authentication based on JWT](#create-user-authentication-based-on-jwt)
@@ -16,17 +20,23 @@ A RESTful Thingy-API for project of group AES2019-yellow
 
 ## Sprint 1
 
-### Setting-up Thingy and Thingy-gateway (done)
+### Checklist
 
-### MQTT Client and subscribe with event listener (done)
+#### Setting-up Thingy and Thingy-gateway (done)
 
-### WS implemented with MVC (done)
+#### MQTT Client and subscribe with event listener (done)
 
-### Model with redis (done)
+#### WS implemented with MVC (done)
 
-### API Endpoints and Routers (in processing)
+#### Model with redis (done)
 
-### Resources: (`GET` only)
+#### API Endpoints and Routers (done)
+
+#### Integrate Swagger UI for the implemented 4 APIs (Done)
+
+#### Web Client (scaffolding) with data representation (Done)
+
+### Endpoint / Resources: (`GET` only)
 
 |no.|resources|verb|url|comment|
 |--|--|--|--|--|
@@ -37,10 +47,6 @@ A RESTful Thingy-API for project of group AES2019-yellow
 
 > If no query or if last > 999, the APIs above return only 10 records as default.
 > `n` refers to the acquired number (rows).
-
-### Integrate Swagger UI for the implemented 4 APIs (Done)
-
-Loading the file __thingy-api-yellow.yml__ in the [swagger editor](https://editor.swagger.io/)
 
 ## Sprint 2 (in discussion)
 
@@ -75,6 +81,3 @@ Some methods: (might be)
   - dismissToken
   - deleteUser (only for admin) ?
 
-### Documentation on Swagger
-
-Loading the file __thingy-api-yellow.yaml__ in the [swagger editor](https://editor.swagger.io/)
