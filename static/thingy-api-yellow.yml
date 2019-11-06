@@ -17,10 +17,18 @@ info:
 servers:
   - url: 'http://localhost:3000'
 paths:
-  '/temperature':
+  '/{device_name}/temperature':
     get:
-      summary: Returns last n registers of temperature
+      summary: Returns last n registers of temperature by input device_name
       parameters:
+        - name: device_name
+          in: path
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The device name
+          example: fe:1f:a1:94:c8:20
         - name: last
           in: query
           description: Last n registers storaged in database. 0 < n < 1000
@@ -41,10 +49,18 @@ paths:
                   $ref: '#/components/schemas/Temperature'
         '400':
           description: Client Exception
-  '/pressure':
+  '/{device_name}/pressure':
     get:
-      summary: Returns last n registers of pressure
+      summary: Returns last n registers of pressure by input device_name
       parameters:
+        - name: device_name
+          in: path
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The device name
+          example: fe:1f:a1:94:c8:20 
         - name: last
           in: query
           description: Last n registers storaged in database. 0 < n < 1000
@@ -65,10 +81,18 @@ paths:
                   $ref: '#/components/schemas/Pressure'
         '400':
           description: Client Exception
-  '/airquality':
+  '/{device_name}/airquality':
     get:
-      summary: Returns last n registers of CO2 (Carbon Dioxide) and TVOC (Total Volatile Organic Compounds)
+      summary: Returns last n registers of CO2 (Carbon Dioxide) and TVOC (Total Volatile Organic Compounds) by input device_name
       parameters:
+        - name: device_name
+          in: path
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The device name
+          example: fe:1f:a1:94:c8:20
         - name: last
           in: query
           description: Last n registers storaged in database. 0 < n < 1000
@@ -89,10 +113,18 @@ paths:
                   $ref: '#/components/schemas/AirQuality'
         '400':
           description: Client Exception
-  '/humidity':
+  '/{device_name}/humidity':
     get:
       summary: Returns last n registers of humidiy
       parameters:
+        - name: device_name
+          in: path
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The device name
+          example: fe:1f:a1:94:c8:20
         - name: last
           in: query
           description: Last n registers storaged in database. 0 < n < 1000
@@ -111,6 +143,29 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/Humidity'
+        '400':
+          description: Client Exception
+  '/Devices':
+    get:
+      summary: Returns maximal n devices
+      parameters:
+        - name: n
+          in: query
+          description: Last n registers storaged in database. n default is 10
+          example: 10
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Devices'
         '400':
           description: Client Exception
 components:
@@ -154,3 +209,13 @@ components:
           type: string
         timestamp:
           type: string
+    Devices:
+      type: object
+      required:
+        - devices
+        - size
+      properties:
+        devices:
+          type: array
+        size:
+          type: integer

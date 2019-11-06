@@ -10,7 +10,7 @@
 'use strict'
 
 const Sequelize = require('sequelize');
-// const sqlite = require('sqlite3');
+const sqlite = require('sqlite3');
 
 const sequelize = new Sequelize({
     dialect: 'sqlite',
@@ -19,8 +19,8 @@ const sequelize = new Sequelize({
 
 const db = {};
 
-// db.Sequelize = Sequelize;
-// db.sequelize = sequelize;
+db.Sequelize = Sequelize;
+db.sequelize = sequelize;
 
 db.Device = require('./models/device')(sequelize);
 db.Temperature = require('./models/temperature')(sequelize);

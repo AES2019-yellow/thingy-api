@@ -26,42 +26,58 @@ router
    * e.g. '/{device_id}/temperature/'
    * 
    */ 
-  .get('/temperature/', getTemperature)
-  .get('/airquality/',getAirQuality)
-  .get('/humidity/',getHumidity)
-  .get('/pressure/',getPressure)
-  .get('/temperature/date/', getTemperatureByDate)
+  .get('/:device_name/temperature/', getTemperature)
+  .get('/:device_name/airquality/',getAirQuality)
+  .get('/:device_name/humidity/',getHumidity)
+  .get('/:device_name/pressure/',getPressure)
+  .get('/devices/', getDevices)
+  //.get('/temperature/date/', getTemperatureByDate)
 
 async function getTemperature (ctx) {
+    let device_name = ctx.params.device_name
     let last = ctx.query['last'];
     last = getAmount(last);
-    let temperatureModel = new model(DEVICE_ID,KEYS.temperature);
+    let temperatureModel = new model(device_name,KEYS.temperature);
     let obj = await temperatureModel.findN(last);
     return ctx.body = obj;
 }
 
 async function getAirQuality (ctx) {
+    let device_name = ctx.params.device_name
     let last = ctx.query['last'];
     last = getAmount(last);
-    let airQualityModel = new model(DEVICE_ID,KEYS.airQuality);
+    let airQualityModel = new model(device_name,KEYS.airQuality);
     let obj = await airQualityModel.findN(last);
     return ctx.body = obj; 
 }
 
 async function getHumidity (ctx) {
+    let device_name = ctx.params.device_name
     let last = ctx.query['last'];
     last = getAmount(last);
-    let humidityModel = new model(DEVICE_ID,KEYS.humidity);
+    let humidityModel = new model(device_name,KEYS.humidity);
     let obj = await humidityModel.findN(last);
     return ctx.body = obj; 
 }
 
 async function getPressure (ctx) {
+    let device_name = ctx.params.device_name
     let last = ctx.query['last'];
     last = getAmount(last);
-    let pressureModel = new model(DEVICE_ID,KEYS.pressure);
+    let pressureModel = new model(device_name,KEYS.pressure);
     let obj = await pressureModel.findN(last);
     return ctx.body = obj; 
+}
+
+async function getDevices (ctx) {
+    let deviceModel = new model();
+    let n = ctx.query['n']
+    if (n == undefined || n == 0){
+        n = 10
+    }
+    let obj = await deviceModel.findAllDevices(n);
+    
+    return ctx.body = obj;
 }
 
 async function getTemperatureByDate (ctx) {
