@@ -34,7 +34,7 @@ const redisPub = new Redis(redis_config);
 // SQLite implementation
 // const sqlite3 = require("sqlite3").verbose();
 
-const db = require('./sqlite_db');
+const db = require('./sqlite_db.js');
 const getExpiration = (seconds,freq=2) => {
   return (minutes = (seconds / freq) * 60);
 };

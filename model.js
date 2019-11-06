@@ -52,6 +52,24 @@ BaseModel.prototype.streamParser = function(stream) {
   });
 };
 
+
+BaseModel.prototype.keysParse = function(data){
+  let devices = new Set()
+  let keys = data[1]; 
+  keys.forEach(key => {
+    let device = key.split(':').slice(0,-1).join(':')
+    devices.add(device)
+  });
+  let res = Array.from(devices)
+  
+  return {
+    'devices': res,
+    'size': res.length
+  }
+
+
+}
+
 BaseModel.prototype.findN = async function(n,end="+") {
   let res = await redis.xrevrange(
     this.getKey(),
@@ -64,6 +82,13 @@ BaseModel.prototype.findN = async function(n,end="+") {
   console.log(res);
   return res;
 };
+
+BaseModel.prototype.findAllDevices = async function(n=10) {
+  let res = await redis.scan(0,'COUNT',100,'MATCH','*');
+  res = this.keysParse(res);
+  console.log(res);
+  return res;
+}
 
 /*
 BaseModel.prototype.findByDates = async function(db_name, startDate, endDate) {
