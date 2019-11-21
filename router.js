@@ -1,13 +1,19 @@
 /*
- * File: /router.js
- * Project: thingy-api-yellow
- * File Created: Thu, 24th October 2019 11:47:47 am
- * Author: Yi Zhang (yi.zhang@unifr.ch)
- * -----
- * Copyright 2019 - 2019 AES-Unifr, AES2019-Yellow
- */
+* File: /router.js
+* Project: thingy-api-yellow
+* File Created: Thu, 24th October 2019 11:47:47 am
+* Author: Yi Zhang (yi.zhang@unifr.ch)
+* -----
+* Copyright 2019 - 2019 AES-Unifr, AES2019-Yellow
+*/
 
 const Router = require('koa-router');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const JWT_SECRET = "Thingy-Yellow";
+const schema = require('./models/validation')
+const userRegSchema = schema.userRegSchema
+const userUpdateSchema = schema.userUpdateSchema
 var router = new Router();
 const DEFAULT_AMOUNT = 10;
 const DEVICE_ID = 'fe:1f:a1:94:c8:20'
@@ -18,20 +24,24 @@ const KEYS = {
     airQuality: 'airQuality'
 }
 
-const model = require('./model.js')
+const model = require('./model.js') // redis model
+const db = require('./sqlite_db.js') // sqlite3 model
 router
-  /* resource end-points:
-   * get last n resources
-   * @ToDo: need to add device_id later
-   * e.g. '/{device_id}/temperature/'
-   * 
-   */ 
-  .get('/:device_name/temperature/', getTemperature)
-  .get('/:device_name/airquality/',getAirQuality)
-  .get('/:device_name/humidity/',getHumidity)
-  .get('/:device_name/pressure/',getPressure)
-  .get('/devices/', getDevices)
-  //.get('/temperature/date/', getTemperatureByDate)
+/* resource end-points:
+* get last n resources
+* @ToDo: need to add device_id later
+* e.g. '/{device_id}/temperature/'
+* 
+*/ 
+.get('/:device_name/temperature/', getTemperature)
+.get('/:device_name/airquality/',getAirQuality)
+.get('/:device_name/humidity/',getHumidity)
+.get('/:device_name/pressure/',getPressure)
+.get('/devices/', getDevices)
+//.get('/temperature/date/', getTemperatureByDate)
+.post('/register/', saveUser)
+.put('/profile/', updateUser)
+.post('/login/', fetchToken)
 
 async function getTemperature (ctx) {
     let device_name = ctx.params.device_name
@@ -87,6 +97,182 @@ async function getTemperatureByDate (ctx) {
     let obj = await temperatureModel.findByDates(KEYS.temperature, start, end);
     return ctx.body = obj;
 }
+
+async function saveUser (ctx) {
+    let data = ctx.request.body;
+    if (data.user!=undefined || data.user!=null){
+        try {
+            let user = data.user;
+            user = userRegSchema.validate(user).value;
+            const saltRounds = 10;
+            salt = bcrypt.genSaltSync(saltRounds)
+            user.password = bcrypt.hashSync(user.password,salt);
+            let res = await db.saveUser(user);
+                    if (res){
+                        // createActivation link
+                        let out = {
+                            user:{
+                                id: res.id,
+                                username: res.username,
+                                firstname: res.firstname,
+                                lastname: res.lastname,
+                                email: res.email
+                            },
+                            status: 'saved'
+                        }
+                        
+                        ctx.status = 200
+                        ctx.body = out
+                    }
+                    else {
+                        ctx.status = 401
+                        return ctx.body = {
+                            error: `User with email ${user.email} already exists.`
+                        }
+                    }
+            // async not work...
+            /*        
+            bcrypt.genSalt(saltRounds,async function(err,salt){
+                bcrypt.hash(user.password,salt,async function(err,hash){
+                    user.password = hash; // use hash as password
+                    let res = await db.saveUser(user);
+                    if (res){
+                        // createActivation link
+                        let out = {
+                            user:{
+                                id: res.id,
+                                username: res.username,
+                                firstname: res.firstname,
+                                lastname: res.lastname,
+                                email: res.email
+                            },
+                            status: 'saved'
+                        }
+                        
+                        ctx.status = 200
+                        ctx.body = out
+                    }
+                    else {
+                        ctx.status = 401
+                        return ctx.body = {
+                            error: `User with email ${user.email} already exists.`
+                        }
+                    }
+                })
+            })
+            */
+        } catch (error) {
+            ctx.body = error;
+            ctx.status = 404;
+        }
+    }
+}
+
+async function fetchToken(ctx) {
+    // init token as null
+    let data = ctx.request.body;
+    let user = data.user
+    if (user!=undefined || user!=null){
+        try {
+            let out = null;
+            let email = user.email;
+            let password = user.password;
+            if ((email!=null || email!=undefined ) && (password!=null || password!=undefined)){
+            let res =await db.findUserByEmail(email)
+                if(res){ // to-do check if activated
+
+                 /* await bcrypt.compare(password, res.password,function(err, result){
+                        const isPwdMatched = result;
+                        if(isPwdMatched){
+                            // asgin token
+                            const payload = {
+                                                id:res.id,
+                                        username:res.username,
+                                            email:res.email
+                                            }
+                            let token = asignToken(payload, JWT_SECRET, "6h");
+                            out = {
+                                user: payload,
+                                token: token,
+                                status: "OK"
+                            }
+                            ctx.body = out;
+                            console.log("out ",out);
+                        }
+                    });
+                    */
+                   
+                //to-do : async not work, need to fix
+                const isPwdMatched = bcrypt.compareSync(password,res.password)
+                if(isPwdMatched){
+                    // asgin token
+                    const payload = {
+                                        id:res.id,
+                                username:res.username,
+                                    email:res.email
+                                    }
+                    let token = asignToken(payload, JWT_SECRET, "6h");
+                    out = {
+                        user: payload,
+                        token: token,
+                        status: "OK"
+                    }
+                    ctx.body = out;
+                    }
+                }
+                console.log("aa ",aa);
+            }
+        } catch (error) {
+            return {
+                error: "cannot assign jwt.",
+                status: "error"
+            }
+        }
+        }
+        
+ }
+    
+
+async function updateUser (ctx) {
+    let data = ctx.request.body;
+    if (data.user!=undefined || data.user!=null){
+        try {
+            let user = data.user
+            user = userUpdateSchema.validate(data.user).value
+            await db.updateUser(user).then((res,err)=>{
+                if (res){
+                    let out = {
+                        user: {
+                            id: res.id,
+                            username: res.username,
+                            firstname: res.firstname,
+                            lastname: res.lastname,
+                            email: res.email
+                        }
+                    }
+                    ctx.status = 200
+                    ctx.body = out
+                    return ctx.body
+                } else {
+                    ctx.status = 401
+                    ctx.body = {
+                        error: `User with email ${user.email} dose not exist.`
+                    }
+                }
+            });
+        } catch (error) {
+            ctx.body = error;
+            ctx.status = 404;
+        }
+        
+    }
+}
+
+function asignToken(user,secret,expiresIn='1h'){
+    let token = jwt.sign(user, secret, {expiresIn:expiresIn});
+    return token;
+}
+
 
 function getAmount (amt) {
     let last = DEFAULT_AMOUNT;

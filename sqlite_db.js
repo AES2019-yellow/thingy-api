@@ -27,6 +27,7 @@ db.Temperature = require('./models/temperature')(sequelize);
 db.Pressure = require('./models/pressure')(sequelize);
 db.Humidity = require('./models/humidity')(sequelize);
 db.AirQuality = require('./models/airquality')(sequelize);
+db.User = require('./models/user.js')(sequelize);
 
 db.Device.hasMany(db.Temperature);
 db.Temperature.belongsTo(db.Device);
@@ -151,6 +152,67 @@ db.saveAirQualityByDeviceName = async function (device_name,data){
        });
 }
 
+db.saveUser = async function (data) {
+    let result = null;
+    let email = data.email;
+    await db.User.findOne({
+        where:{
+            email: email
+        }
+    }).then(async (res,err)=>{
+        if (!res) {
+            let user = await db.User.create({
+                username: data.username,
+                firstname: data.firstname,
+                lastname: data.lastname,
+                email: data.email,
+                password: data.password // need to be crypted (with bcrypt later on)
+            }).then((user,err)=>{
+                if(!err){
+                    console.log("saveUser ", user, " succeed!");
+                    result = user;
+                }
+            })
+        }
+    });
+    return result;
+}
+
+db.updateUser = async function (data) {
+    let email = data.email;
+    let result = null
+    await db.User.findOne({
+        where: {
+            email: email
+        }
+    }).then(async function(user,err){
+        if (user){
+            user.update({
+                firstname: data.firstname ? data.firstname:user.firstname,
+                lastname: data.lastname ? data.lastname:user.lastname,
+                password: data.password ? data.password:user.password
+            }).then((res,err)=>{
+                if (!err){
+                    console.log('updateUser ',res,' successfully.')
+                    result = res
+                }
+            });
+        }
+    });
+    return result;
+}
+
+db.findUserByEmail = async function(email){
+    let user = await db.User.findOne({
+        where: {
+            email:email
+        },
+        order:[[ 'createdAt', 'DESC' ]],
+    });
+    return user;
+}
+
+
 /*
 db.findByDate = async function (date){
 
@@ -162,6 +224,7 @@ db.findByDate = async function (date){
 /**
  * Uncomment the line below, if a new db file needs to be migrated.
  */
+
 // db.createSchema()
 
 module.exports = db;
