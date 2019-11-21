@@ -9,9 +9,11 @@ A RESTful Thingy-API for project of group AES2019-yellow
     - [WS implemented with MVC (done)](#ws-implemented-with-mvc-done)
     - [API Endpoints and Routers (in processing)](#api-endpoints-and-routers-in-processing)
     - [Resources: (`GET` only)](#resources-get-only)
+    - [Integrate Swagger UI for the implemented 4 APIs (Done)](#integrate-swagger-ui-for-the-implemented-4-apis-done)
   - [Sprint 2 (in discussion)](#sprint-2-in-discussion)
     - [Create User Profile](#create-user-profile)
     - [Create User authentication based on JWT](#create-user-authentication-based-on-jwt)
+    - [Documentation on Swagger](#documentation-on-swagger)
 
 
 ## Sprint 1
@@ -51,12 +53,9 @@ Loading the file __thingy-api-yellow.yml__ in the [swagger editor](https://edito
 {
     firstName : String,
     lastName: String,
-    gender: Int,
-    age: Int
     email: String
     username: String
     password: password,
-    token: // for oAuth not for jwt
 }
 ```
 
@@ -65,16 +64,50 @@ Loading the file __thingy-api-yellow.yml__ in the [swagger editor](https://edito
 Some methods: (might be)
 
 - Before Login:
-  - createUser
+  - register
   - login
 
 - After Login:
-  - updateUser
-  - acquireToken
-  - renewToken
-  - dismissToken
-  - deleteUser (only for admin) ?
+  - profile (updateUser)
+  - all other APIs
 
 ### Documentation on Swagger
 
 Loading the file __thingy-api-yellow.yaml__ in the [swagger editor](https://editor.swagger.io/)
+
+#### JWT Token usage
+
+All after login-in APIs needs to add `Bearer <Token>` in `Header.` 
+example of source code for a request with authentication 
+
+```
+GET /devices/ HTTP/1.1
+Host: 127.0.0.1:3000
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6NywidXNlcm5hbWUiOiJ0ZXN0dXNlciIsImVtYWlsIjoidGVzdEB0ZXN0LmNvbSIsImlhdCI6MTU3NDM0MjE3MCwiZXhwIjoxNTc0MzYzNzcwfQ.CwWG7JlnuojH7nj7oWl51oTGxsvi7SmCmSFqd-y_8bc
+User-Agent: PostmanRuntime/7.17.1
+Accept: */*
+Cache-Control: no-cache
+Postman-Token: d30a23f4-d06b-4067-b569-0ce6ce53a325,e8dba0ad-c38d-43ec-8706-7f5344fb533f
+Host: 127.0.0.1:3000
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+cache-control: no-cache
+```
+
+then got result:
+
+```JSON
+{
+    "devices": [
+        "fe:1f:a1:94:c8:20"
+    ],
+    "size": 1
+}
+```
+
+Without authentication or with invalid authentication
+the `ctx.status` is 401. and a message is returned:
+
+```
+Authentication Error
+```
