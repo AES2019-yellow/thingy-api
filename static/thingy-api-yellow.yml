@@ -16,7 +16,41 @@ info:
     url: https://github.com/AES2019-yellow/thingy-api-yellow/tree/dev
 servers:
   - url: 'http://localhost:3000'
+security:
+  - bearerAuth: [] 
 paths:
+  '/register':
+    post:
+      summary: New user register
+      requestBody:
+        description: User can register in the system
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid input
+  '/login':
+    post:
+      summary: User login
+      requestBody:
+        description: User can login in the system. The token of the result should be pasted on authorization field
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized user
   '/{device_name}/temperature':
     get:
       summary: Returns last n registers of temperature by input device_name
@@ -147,6 +181,8 @@ paths:
           description: Client Exception
   '/Devices':
     get:
+      security:
+        - bearerAuth: []
       summary: Returns maximal n devices
       parameters:
         - name: n
@@ -169,6 +205,11 @@ paths:
         '400':
           description: Client Exception
 components:
+  securitySchemes:
+    bearerAuth:            
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Temperature:
       type: object
@@ -217,5 +258,56 @@ components:
       properties:
         devices:
           type: array
+          items:
+            type: string
         size:
           type: integer
+    NewUser:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          $ref: '#/components/schemas/UserInfo'
+    UserInfo:
+      type: object
+      required:
+        - username
+        - firstname
+        - lastname
+        - email
+        - password
+      properties:
+        username:
+          type: string
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    User:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          $ref: '#/components/schemas/UserLogin'
+    UserLogin:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
