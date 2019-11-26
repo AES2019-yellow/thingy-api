@@ -212,6 +212,22 @@ db.findUserByEmail = async function(email){
     return user;
 }
 
+db.activateUser = async function(email){
+    let result = false
+    let user =await db.findUserByEmail(email);
+    if (user){
+        await user.update({
+            isActivated: true
+        }).then((res,err)=>{
+            if(!err){
+                result = res;
+            }
+        });
+    }
+    return result;
+
+}
+
 
 /*
 db.findByDate = async function (date){

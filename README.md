@@ -14,6 +14,8 @@ A RESTful Thingy-API for project of group AES2019-yellow
     - [Create User Profile](#create-user-profile)
     - [Create User authentication based on JWT](#create-user-authentication-based-on-jwt)
     - [Documentation on Swagger](#documentation-on-swagger)
+      - [JWT Token usage](#jwt-token-usage)
+      - [User Activation](#user-activation)
 
 
 ## Sprint 1
@@ -75,7 +77,7 @@ Some methods: (might be)
 
 Loading the file __thingy-api-yellow.yaml__ in the [swagger editor](https://editor.swagger.io/)
 
-#### JWT Token usage
+#### JWT Token usage
 
 All after login-in APIs needs to add `Bearer <Token>` in `Header.` 
 example of source code for a request with authentication 
@@ -111,3 +113,79 @@ the `ctx.status` is 401. and a message is returned:
 ```
 Authentication Error
 ```
+
+#### User Activation
+
+Now User can be activted by the activation link returned from register:
+
+```
+{
+"user": 
+	{
+	"username": "testuser1",	
+	"firstname": "John",
+	"lastname": "Doe",
+	"email": "test1@test.com",
+	"password": "1@2B3c",
+	"repeat_password": "1@2B3c"
+	}
+}
+```
+
+response:
+
+```
+{
+    "user": {
+        "id": 12,
+        "username": "testuser",
+        "firstname": "John",
+        "lastname": "Doe",
+        "email": "test@test.com"
+    },
+    "activation": "http://127.0.0.1:3000/activation/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxMiwidXNlcm5hbWUiOiJ0ZXN0dXNlcjEiLCJmaXJzdG5hbWUiOiJKb2huIiwibGFzdG5hbWUiOiJEb2UiLCJlbWFpbCI6InRlc3QxQHRlc3QuY29tIn0sImlhdCI6MTU3NDgxMTg2MH0.ENrcHtPz2o8_ooI7FWx-x_2zzZNpKM2645ek3eNQtN8",
+    "status": "saved"
+}
+```
+
+if user visite the GET /activation/<token> with valid token, a message with an status of activated will be returned.
+
+```
+{
+    "user": {
+        "id": 11,
+        "username": "testuser",
+        "firstname": "John",
+        "lastname": "Doe",
+        "email": "test@test.com",
+        "isActivated": true,
+        "createdAt": "2019-11-26T23:42:58.400Z",
+        "updatedAt": "2019-11-26T23:43:06.374Z"
+    },
+    "status": "activated"
+}
+```
+
+without activation, if user login with correct email and password, an error message will be notified and an reActivation link is also generated:
+(without activation)
+```
+{
+"user": 
+	{
+	"email": "test@test.com",
+	"password": "1@2B3c"
+	}
+}
+```
+
+response:
+
+```
+{
+    "error": "User is not activated",
+    "reActivation": "http://127.0.0.1:3000/activation/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxMiwidXNlcm5hbWUiOiJ0ZXN0dXNlcjEiLCJmaXJzdG5hbWUiOiJKb2huIiwibGFzdG5hbWUiOiJEb2UiLCJlbWFpbCI6InRlc3QxQHRlc3QuY29tIn0sImlhdCI6MTU3NDgxMTg3NH0.IQc0bVjRiw0QtNOYtR0ru5zZQjEua7EcMeMTRxFZA9s",
+    "status": "error"
+}
+```
+
+
