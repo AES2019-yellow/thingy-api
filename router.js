@@ -42,6 +42,7 @@ router
 .post('/register/', saveUser)
 .put('/profile/', updateUser)
 .post('/login/', fetchToken)
+.get('activation','/activation/:token', activateUser)
 
 async function getTemperature (ctx) {
     let device_name = ctx.params.device_name
@@ -110,6 +111,16 @@ async function saveUser (ctx) {
             let res = await db.saveUser(user);
                     if (res){
                         // createActivation link
+                        token = jwt.sign({
+                            user:{
+                                id: res.id,
+                                username: res.username,
+                                firstname: res.firstname,
+                                lastname: res.lastname,
+                                email: res.email
+                            }   
+                        },JWT_SECRET);
+
                         let out = {
                             user:{
                                 id: res.id,
@@ -118,7 +129,9 @@ async function saveUser (ctx) {
                                 lastname: res.lastname,
                                 email: res.email
                             },
+                            activation: 'http://' + ctx.host + router.url('activation', token),
                             status: 'saved'
+
                         }
                         
                         ctx.status = 200
@@ -204,7 +217,7 @@ async function fetchToken(ctx) {
                    
                 //to-do : async not work, need to fix
                 const isPwdMatched = bcrypt.compareSync(password,res.password)
-                if(isPwdMatched){
+                if(isPwdMatched && res.isActivated){
                     // asgin token
                     const payload = {
                                         id:res.id,
@@ -219,12 +232,33 @@ async function fetchToken(ctx) {
                     }
                     ctx.body = out;
                     }
+                    else if (isPwdMatched){
+                        let token = jwt.sign({
+                            user:{
+                                id: res.id,
+                                username: res.username,
+                                firstname: res.firstname,
+                                lastname: res.lastname,
+                                email: res.email
+                            }   
+                        },JWT_SECRET);
+
+                        ctx.body = {
+                            error: "User is not activated",
+                            reActivation: 'http://' + ctx.host + router.url('activation', token), 
+                            status: "error"
+                        }
+                    } else {
+                        ctx.body = {
+                            error: "User is not registed",
+                            status: "error"
+                        } 
+                    } 
                 }
-                console.log("aa ",aa);
             }
         } catch (error) {
-            return {
-                error: "cannot assign jwt.",
+            ctx.body =  {
+                error: "JWT cannot be assigned",
                 status: "error"
             }
         }
@@ -266,6 +300,35 @@ async function updateUser (ctx) {
         }
         
     }
+}
+
+async function activateUser(ctx){
+    let token = ctx.params.token
+    if (token){
+        try {
+            let decoded = jwt.verify(token, JWT_SECRET);
+            let email = decoded.user.email
+            let result = await db.activateUser(email)
+            ctx.body = {
+                user: {
+                    id: result.id,
+                    username:result.username,
+                    firstname:result.firstname,
+                    lastname: result.lastname,
+                    email: result.email,
+                    isActivated: result.isActivated,
+                    createdAt: result.createdAt,
+                    updatedAt: result.updatedAt,
+                },
+                status: "activated"
+            }
+        } catch (error) {
+            ctx.body = {
+                error: "invalid token"
+            }
+        }
+    }
+
 }
 
 function asignToken(user,secret,expiresIn='1h'){

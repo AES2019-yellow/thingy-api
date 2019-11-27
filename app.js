@@ -31,7 +31,7 @@ app
     koaJwt({
       secret: SECRET
     }).unless({
-      path: [/^\/login/, /^\/register/,/^\/swagger/]
+      path: [/^\/login/, /^\/register/,/^\/swagger/,/^\/activation\/(.*)/]
     })
   );
   
