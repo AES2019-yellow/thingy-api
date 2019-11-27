@@ -16,6 +16,7 @@ A RESTful Thingy-API for project of group AES2019-yellow
     - [Documentation on Swagger](#documentation-on-swagger)
       - [JWT Token usage](#jwt-token-usage)
       - [User Activation](#user-activation)
+    - [Location Based Service API (LBS API added)](#location-based-service-api-lbs-api-added)
 
 
 ## Sprint 1
@@ -185,6 +186,72 @@ response:
     "error": "User is not activated",
     "reActivation": "http://127.0.0.1:3000/activation/eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyIjp7ImlkIjoxMiwidXNlcm5hbWUiOiJ0ZXN0dXNlcjEiLCJmaXJzdG5hbWUiOiJKb2huIiwibGFzdG5hbWUiOiJEb2UiLCJlbWFpbCI6InRlc3QxQHRlc3QuY29tIn0sImlhdCI6MTU3NDgxMTg3NH0.IQc0bVjRiw0QtNOYtR0ru5zZQjEua7EcMeMTRxFZA9s",
     "status": "error"
+}
+```
+
+### Location Based Service API (LBS API added) 
+
+> Authentication required
+
+Example 
+
+```
+http://127.0.0.1:3000/lbs/?last=5
+```
+
+result
+
+```
+{
+    "positions": [
+        {
+            "Lat": "46.79461",
+            "Long": "7.15395",
+            "timestamp": "2019-11-27T18:36:57.262Z"
+        },
+        {
+            "Lat": "46.79461",
+            "Long": "7.15395",
+            "timestamp": "2019-11-27T18:36:56.265Z"
+        },
+        {
+            "Lat": "46.79461",
+            "Long": "7.15395",
+            "timestamp": "2019-11-27T18:36:55.233Z"
+        },
+        {
+            "Lat": "46.79455",
+            "Long": "7.1539",
+            "timestamp": "2019-11-27T18:36:29.251Z"
+        },
+        {
+            "Lat": "46.79455",
+            "Long": "7.1539",
+            "timestamp": "2019-11-27T18:36:28.224Z"
+        }
+    ],
+    "speeds": [
+        {
+            "speed": "0",
+            "timestamp": "2019-11-27T18:36:57.412Z"
+        },
+        {
+            "speed": "0",
+            "timestamp": "2019-11-27T18:36:56.588Z"
+        },
+        {
+            "speed": "0",
+            "timestamp": "2019-11-27T18:36:55.274Z"
+        },
+        {
+            "speed": "0.15",
+            "timestamp": "2019-11-27T18:36:29.435Z"
+        },
+        {
+            "speed": "0",
+            "timestamp": "2019-11-27T18:36:28.264Z"
+        }
+    ]
 }
 ```
 
