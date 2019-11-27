@@ -26,11 +26,11 @@ const BaseModel = function(device_Id = null, category = null) {
   this.category = category;
 };
 
-BaseModel.prototype.getKey = function() {
+BaseModel.prototype.getKey = function(key=null) {
   if (this.category != null && this.deviceId != null) {
     return this.deviceId.toString() + ":" + this.category.toString();
   }
-  return null;
+  return key;
 };
 
 BaseModel.prototype.streamParser = function(stream) {
@@ -70,9 +70,9 @@ BaseModel.prototype.keysParse = function(data){
 
 }
 
-BaseModel.prototype.findN = async function(n,end="+") {
+BaseModel.prototype.findN = async function(n,end="+",key=null) {
   let res = await redis.xrevrange(
-    this.getKey(),
+    this.getKey(key),
     end,
     "-",
     "COUNT",

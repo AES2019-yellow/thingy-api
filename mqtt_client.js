@@ -76,6 +76,12 @@ SubModel.prototype.dispatcher = function(topic, message, packet) {
       return sub[topic_type](thingy_id, topic_type, message, packet);
     }
   }
+  // [Topic]: 'BLE2MQTT-EA5C/Position' | [Message]: '46.79430,7.15376'
+  // [Topic]: 'BLE2MQTT-EA5C/Speed' | [Message]: '0.000000'
+  if (topic_arr[1] == "Position" || topic_arr[1] == "Speed"){
+    let topic_type= topic_arr[1]
+    return sub.lbs(topic_type,message,packet)
+  }  
 };
 
 SubModel.prototype.temperature = async (
@@ -188,6 +194,43 @@ SubModel.prototype.lightIntensity = async function(
   );
   // console.log(res);
   return res;
+};
+
+SubModel.prototype.lbs = async function(
+  topic_type,
+  message,
+  packet
+) {
+  let res = false;
+  let timestamp = getTime();
+  if (topic_type=="Position"){
+    let topic_types = ["Lat", "Long"];
+    let pos_arr = message.toString().split(",");
+    let lat_val = parseFloat(pos_arr[0]);
+    let long_val = parseFloat(pos_arr[1]);
+    if ((lat_val !=0 && lat_val!=NaN) && (long_val !=0 && long_val != NaN)){
+      let key = topic_type.toLowerCase();
+      let exp = getExpiration(MAX_EXPIRATION,10);
+      res = await redis.xadd(key, "MAXLEN", "~", exp, "*", topic_types[0], lat_val, topic_types[1], long_val, "timestamp", timestamp);
+      // console.log(res);
+      redisPub.publish("xadd","/"+key+":"+res+"/")
+      return res; // key entry returns if successful
+    }
+    
+    
+  }
+  if (topic_type=="Speed"){
+    let speedStr = message.toString();
+    let speed_val = parseFloat(speedStr);
+    let key = topic_type.toLowerCase();
+    let exp = getExpiration(MAX_EXPIRATION,10);
+    res = await redis.xadd(key, "MAXLEN", "~", exp, "*", key, speed_val, "timestamp", timestamp);
+
+    // console.log(res);
+    redisPub.publish("xadd","/"+key+":"+res+"/")
+    return res; // key entry returns if successful
+  }
+  
 };
 
 var getTime = () => {

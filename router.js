@@ -38,6 +38,7 @@ router
 .get('/:device_name/humidity/',getHumidity)
 .get('/:device_name/pressure/',getPressure)
 .get('/devices/', getDevices)
+.get('/lbs/',getLbs)
 //.get('/temperature/date/', getTemperatureByDate)
 .post('/register/', saveUser)
 .put('/profile/', updateUser)
@@ -82,13 +83,26 @@ async function getPressure (ctx) {
 
 async function getDevices (ctx) {
     let deviceModel = new model();
-    let n = ctx.query['n']
+    let n = ctx.query['n'];
     if (n == undefined || n == 0){
         n = 10
     }
     let obj = await deviceModel.findAllDevices(n);
     
     return ctx.body = obj;
+}
+
+async function getLbs (ctx){
+    let lbsModel = new model();
+    let last = ctx.query['last'];
+    last = getAmount(last);
+    let pos = await lbsModel.findN(last,"+","position");
+    let speed = await lbsModel.findN(last,"+","speed");
+    ctx.body = {
+        positions: pos,
+        speeds: speed
+    }
+
 }
 
 async function getTemperatureByDate (ctx) {
