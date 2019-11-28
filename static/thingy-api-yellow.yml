@@ -16,11 +16,53 @@ info:
     url: https://github.com/AES2019-yellow/thingy-api-yellow/tree/dev
 servers:
   - url: 'http://localhost:3000'
+security:
+  - bearerAuth: [] 
 paths:
-  '/temperature':
+  '/register':
+    post:
+      summary: New user register
+      requestBody:
+        description: User can register in the system
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/NewUser'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid input
+  '/login':
+    post:
+      summary: User login
+      requestBody:
+        description: User can login in the system. The token of the result should be pasted on authorization field
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: Successful operation
+        '400':
+          description: Invalid input
+        '401':
+          description: Unauthorized user
+  '/{device_name}/temperature':
     get:
-      summary: Returns last n registers of temperature
+      summary: Returns last n registers of temperature by input device_name
       parameters:
+        - name: device_name
+          in: path
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The device name
+          example: fe:1f:a1:94:c8:20
         - name: last
           in: query
           description: Last n registers storaged in database. 0 < n < 1000
@@ -41,10 +83,18 @@ paths:
                   $ref: '#/components/schemas/Temperature'
         '400':
           description: Client Exception
-  '/pressure':
+  '/{device_name}/pressure':
     get:
-      summary: Returns last n registers of pressure
+      summary: Returns last n registers of pressure by input device_name
       parameters:
+        - name: device_name
+          in: path
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The device name
+          example: fe:1f:a1:94:c8:20 
         - name: last
           in: query
           description: Last n registers storaged in database. 0 < n < 1000
@@ -65,10 +115,18 @@ paths:
                   $ref: '#/components/schemas/Pressure'
         '400':
           description: Client Exception
-  '/airquality':
+  '/{device_name}/airquality':
     get:
-      summary: Returns last n registers of CO2 (Carbon Dioxide) and TVOC (Total Volatile Organic Compounds)
+      summary: Returns last n registers of CO2 (Carbon Dioxide) and TVOC (Total Volatile Organic Compounds) by input device_name
       parameters:
+        - name: device_name
+          in: path
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The device name
+          example: fe:1f:a1:94:c8:20
         - name: last
           in: query
           description: Last n registers storaged in database. 0 < n < 1000
@@ -89,10 +147,18 @@ paths:
                   $ref: '#/components/schemas/AirQuality'
         '400':
           description: Client Exception
-  '/humidity':
+  '/{device_name}/humidity':
     get:
       summary: Returns last n registers of humidiy
       parameters:
+        - name: device_name
+          in: path
+          required: true
+          schema:
+            type: string
+            minimum: 1
+          description: The device name
+          example: fe:1f:a1:94:c8:20
         - name: last
           in: query
           description: Last n registers storaged in database. 0 < n < 1000
@@ -113,7 +179,37 @@ paths:
                   $ref: '#/components/schemas/Humidity'
         '400':
           description: Client Exception
+  '/Devices':
+    get:
+      security:
+        - bearerAuth: []
+      summary: Returns maximal n devices
+      parameters:
+        - name: n
+          in: query
+          description: Last n registers storaged in database. n default is 10
+          example: 10
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/Devices'
+        '400':
+          description: Client Exception
 components:
+  securitySchemes:
+    bearerAuth:            
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     Temperature:
       type: object
@@ -154,3 +250,64 @@ components:
           type: string
         timestamp:
           type: string
+    Devices:
+      type: object
+      required:
+        - devices
+        - size
+      properties:
+        devices:
+          type: array
+          items:
+            type: string
+        size:
+          type: integer
+    NewUser:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          $ref: '#/components/schemas/UserInfo'
+    UserInfo:
+      type: object
+      required:
+        - username
+        - firstname
+        - lastname
+        - email
+        - password
+      properties:
+        username:
+          type: string
+        firstname:
+          type: string
+        lastname:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+    User:
+      type: object
+      required:
+        - user
+      properties:
+        user:
+          $ref: '#/components/schemas/UserLogin'
+    UserLogin:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password

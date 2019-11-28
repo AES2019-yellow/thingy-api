@@ -62,3 +62,7 @@ typings/
 
 # vscode
 .vscode
+*.code-workspace
+
+# sqlite3
+*.sqlite3
