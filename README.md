@@ -10,28 +10,46 @@ A RESTful Thingy-API for project of group AES2019-yellow
     - [API Endpoints and Routers (in processing)](#api-endpoints-and-routers-in-processing)
     - [Resources: (`GET` only)](#resources-get-only)
     - [Integrate Swagger UI for the implemented 4 APIs (Done)](#integrate-swagger-ui-for-the-implemented-4-apis-done)
-  - [Sprint 2 (in discussion)](#sprint-2-in-discussion)
-    - [Create User Profile](#create-user-profile)
-    - [Create User authentication based on JWT](#create-user-authentication-based-on-jwt)
-    - [Documentation on Swagger](#documentation-on-swagger)
-      - [JWT Token usage](#jwt-token-usage)
-      - [User Activation](#user-activation)
-    - [Location Based Service API (LBS API added)](#location-based-service-api-lbs-api-added)
+    - [Checklist](#checklist)
+      - [Setting-up Thingy and Thingy-gateway (done)](#setting-up-thingy-and-thingy-gateway-done)
+      - [MQTT Client and subscribe with event listener (done)](#mqtt-client-and-subscribe-with-event-listener-done)
+      - [WS implemented with MVC (done)](#ws-implemented-with-mvc-done)
+      - [Model with redis (done)](#model-with-redis-done)
+      - [API Endpoints and Routers (done)](#api-endpoints-and-routers-done)
+      - [Integrate Swagger UI for the implemented 4 APIs (Done)](#integrate-swagger-ui-for-the-implemented-4-apis-done)
+      - [Web Client (scaffolding) with data representation (Done)](#web-client-scaffolding-with-data-representation-done)
+      - [Models for historical data with RDMBS (Done)](#models-for-historical-data-with-rdmbs-done)
+      - [Using ORM (Sequelize) to decouple the DB and Model (Done)](#using-orm-sequelize-to-decouple-the-db-and-model-done)
+      - [Using Redis Sub / Pub to verify the amount of appended fields. Hence, data can be compressed (in mean values) and transfered to a RDBMS (Done)](#using-redis-sub--pub-to-verify-the-amount-of-appended-fields-hence-data-can-be-compressed-in-mean-values-and-transfered-to-a-rdbms-done)
+    - [Endpoint / Resources: (`GET` only)](#endpoint--resources-get-only)
+
 
 
 ## Sprint 1
 
-### Setting-up Thingy and Thingy-gateway (done)
+### Checklist
 
-### MQTT Client and subscribe with event listener (done)
+#### Setting-up Thingy and Thingy-gateway (done)
 
-### WS implemented with MVC (done)
+#### MQTT Client and subscribe with event listener (done)
 
-### Model with redis (done)
+#### WS implemented with MVC (done)
 
-### API Endpoints and Routers (in processing)
+#### Model with redis (done)
 
-### Resources: (`GET` only)
+#### API Endpoints and Routers (done)
+
+#### Integrate Swagger UI for the implemented 4 APIs (Done)
+
+#### Web Client (scaffolding) with data representation (Done)
+
+#### Models for historical data with RDMBS (Done)
+
+#### Using ORM (Sequelize) to decouple the DB and Model (Done)
+
+#### Using Redis Sub / Pub to verify the amount of appended fields. Hence, data can be compressed (in mean values) and transfered to a RDBMS (Done)
+
+### Endpoint / Resources: (`GET` only)
 
 |no.|resources|verb|url|comment|
 |--|--|--|--|--|
@@ -42,10 +60,6 @@ A RESTful Thingy-API for project of group AES2019-yellow
 
 > If no query or if last > 999, the APIs above return only 10 records as default.
 > `n` refers to the acquired number (rows).
-
-### Integrate Swagger UI for the implemented 4 APIs (Done)
-
-Loading the file __thingy-api-yellow.yml__ in the [swagger editor](https://editor.swagger.io/)
 
 ## Sprint 2 (in discussion)
 
@@ -254,5 +268,3 @@ result
     ]
 }
 ```
-
-
