@@ -363,20 +363,12 @@ function getAmount (amt) {
 }
 
 
-function getRandom(){
-    rand=Math.floor((Math.random() * 100) + 54);
-    return rand
-}
-
-
 function sendMail(email){
-    rand = getRandom(); //we need to store id in database I guess?
     /*------------------temp solution-----------------------------*/
-    link="http://localhost:3000"+"/verify?id="+rand;
     mailOptions={
         to : email,
-        subject : "Please confirm your Email account",
-        html : "Hello,<br> Please Click on the link to verify your email.<br><a href="+link+">Click here to verify</a>"
+        subject : "Buongiorno, you've registered!",
+        html : "Hello,<br> Your email was registered in our Thingy stuff.</a>"
     }
     console.log(mailOptions);
     transport.sendMail(mailOptions, function(error, response){
@@ -387,21 +379,6 @@ function sendMail(email){
         }
 
     });
-}
-
-
-async function verifyUser (ctx) {
-    let id = ctx.query['id'];
-    console.log("Domain is matched. Information is from Authentic email");
-    if(id==rand)
-    {
-        console.log("email is verified");
-        //something here
-    }
-    else {
-        console.log("email is not verified");
-        //something here
-    }
 }
 
 exports['default'] = router;
