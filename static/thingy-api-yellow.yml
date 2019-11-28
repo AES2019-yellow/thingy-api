@@ -204,6 +204,22 @@ paths:
                   $ref: '#/components/schemas/Devices'
         '400':
           description: Client Exception
+  '/lbs':
+    get:
+      security:
+        - bearerAuth: []
+      summary: Returns last 10 localization based service measures
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                items:
+                  $ref: '#/components/schemas/LBS'
+        '400':
+          description: Client Exception
 components:
   securitySchemes:
     bearerAuth:            

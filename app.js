@@ -27,6 +27,7 @@ app
   .use(bodyParser())
   .use(cors())
   .use(router.allowedMethods())
+  .use(serve('./static'))
   .use(
     koaJwt({
       secret: SECRET
@@ -70,7 +71,6 @@ app
    });
 
 app.use(router.routes())
-  .use(serve('./static'))
   .use(
     koaSwagger({
       routePrefix: '/swagger',
