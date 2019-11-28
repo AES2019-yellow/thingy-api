@@ -58,7 +58,9 @@ BaseModel.prototype.keysParse = function(data){
   let keys = data[1]; 
   keys.forEach(key => {
     let device = key.split(':').slice(0,-1).join(':')
-    devices.add(device)
+    if (device!=""){
+      devices.add(device) 
+    }
   });
   let res = Array.from(devices)
   
