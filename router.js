@@ -26,6 +26,7 @@ const KEYS = {
 
 const model = require('./model.js') // redis model
 const db = require('./sqlite_db.js') // sqlite3 model
+const sendMail = require('./mailer.js')
 router
 /* resource end-points:
 * get last n resources
@@ -122,7 +123,7 @@ async function saveUser (ctx) {
             const saltRounds = 10;
             salt = bcrypt.genSaltSync(saltRounds)
             user.password = bcrypt.hashSync(user.password,salt);
-            let res = await db.saveUser(user);
+            let res = await db.saveUser(user)
                     if (res){
                         // createActivation link
                         token = jwt.sign({
@@ -147,7 +148,8 @@ async function saveUser (ctx) {
                             status: 'saved'
 
                         }
-                        
+                        // send eamil here
+                        sendActivationEmail(out.user.email,out.user.username,out.activation).catch(console.error);
                         ctx.status = 200
                         ctx.body = out
                     }
@@ -360,6 +362,28 @@ function getAmount (amt) {
         }
     }
     return last 
+}
+
+function sendActivationEmail(email, username, activationLink){
+    let subject = "Activation Mail"
+    let planText = "Please activate your account by clicking: "+activationLink;
+    let richText = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
+    +'<meta name="viewport" content="width=device-width, initial-scale=1.0">'
+    +'<meta http-equiv="X-UA-Compatible" content="ie=edge">'
+    +'<title>Activation Email</title>'
+    +'</head>'
+    +'<body>'
+    +'<p>Hello, '
+    +username
+    +'</p>'
+    +'<p>You can activate your account by clicking the link below: <a href="'
+    +activationLink
+    +'">Activation link.</a></p>'
+    +'<p>Thank you for your registration</p>'
+    +'<p>Thingy-yellow team</p>'
+    +'</body>'
+    +'</html>'
+    return sendMail(email, subject,planText,richText).catch(console.error);
 }
 
 exports['default'] = router;
